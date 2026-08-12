@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// Reglas de la colección de cotizaciones.
+//
+// PRINCIPIO: el navegador solo puede ESCRIBIR. Nadie puede leer, editar ni
+// borrar desde el cliente. Los leads se consultan desde la consola de Firebase
+// o desde el backend, nunca desde la web pública.
+//
+// ⚠️ Esto NO es el "modo de prueba" de Firestore. El modo de prueba deja la
+// base de datos abierta a lectura y escritura para cualquiera durante 30 días:
+// cualquier persona podría descargarse la lista completa de teléfonos de tus
+// clientes potenciales.
+//
+// Cuando exista el proyecto de Firebase, comprueba las reglas con
+// `node scripts/prueba-firestore.mjs`: una cotización válida debe guardarse, y
+// tanto un producto fuera de la lista como leer la colección deben fallar con
+// permission-denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ⚠️ Para preguntar si un campo OPCIONAL viene, hay que usar
+    // `'campo' in datos` sobre el MAPA. Con `'campo' in datos.keys()` la regla
+    // compila pero no evalúa como se espera y acaba denegando escrituras
+    // perfectamente válidas — costó una ronda de depuración.
+    function campoTextoOpcional(datos, campo, maxLargo) {
+      return !(campo in datos) || (datos[campo] is string && datos[campo].size() <= maxLargo);
+    }
+
+    function solicitudValida(datos) {
+      return datos.keys().hasOnly([
+               'nombre', 'telefono', 'producto', 'edad',
+               'idioma', 'origen', 'referrer', 'url', 'creado'
+             ])
+          && datos.keys().hasAll(['nombre', 'telefono', 'producto', 'creado'])
+
+          && datos.nombre is string
+          && datos.nombre.size() >= 2
+          && datos.nombre.size() <= 80
+
+          && datos.telefono is string
+          && datos.telefono.size() >= 7
+          && datos.telefono.size() <= 25
+
+          // Solo las 4 líneas de producto + la opción "quiero orientación".
+          && datos.producto is string
+          && datos.producto in ['iul', 'termino', 'finales',
+                                'anualidades', 'orientacion']
+
+          && campoTextoOpcional(datos, 'edad', 10)
+          && campoTextoOpcional(datos, 'idioma', 5)
+          && campoTextoOpcional(datos, 'origen', 60)
+          && campoTextoOpcional(datos, 'referrer', 200)
+          && campoTextoOpcional(datos, 'url', 200)
+
+          // La marca de tiempo la pone el servidor, no el cliente.
+          && datos.creado == request.time;
+    }
+
+    match /cotizaciones/{documento} {
+      // Nadie lee desde el cliente.
+      allow read: if false;
+      // Nadie modifica ni borra desde el cliente.
+      allow update, delete: if false;
+
+      // Cualquiera puede crear una solicitud, pero solo con esta forma exacta.
+      allow create: if solicitudValida(request.resource.data);
+    }
+
+    // Todo lo demás, cerrado.
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}
