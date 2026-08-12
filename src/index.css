@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    /* La audiencia es de 50 años en adelante. Tailwind mide en rem, así que
+       subir la base de 16 a 17 px agranda TODA la página de forma
+       proporcional: texto, botones y áreas táctiles. Verificado que no
+       provoca scroll horizontal ni en 390 px ni en 1440 px. */
+    font-size: 17px;
+  }
+
+  /* ⚠️ Trampa 3: `overflow-x: hidden` en el body rompe cualquier
+     `position: sticky` descendiente. `clip` corta igual el desbordamiento
+     horizontal sin crear el contexto de scroll que rompe el sticky. */
+  body {
+    overflow-x: clip;
+    @apply bg-white font-texto text-tinta-800 antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Corrige el salto al usar anclas con la barra fija encima. */
+  .scroll-mt-barra {
+    scroll-margin-top: 5rem;
+  }
+}
