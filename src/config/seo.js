@@ -31,8 +31,9 @@ export const seo = {
   ogImage: `${site.url}/og-image.png`,
   ogLocale: t.ogLocale,
   lang: t.htmlLang,
-  // `canonical` solo si la URL es la que de verdad sirve la página.
-  canonical: esMarcador(site.firebaseProjectId) ? null : site.url,
+  // `canonical` solo si la URL es la que de verdad sirve la página (dominio
+  // propio / Vercel en `site.dominio`, o el proyecto de Firebase Hosting).
+  canonical: site.urlConfirmada ? site.url : null,
 }
 
 /**
@@ -50,7 +51,7 @@ export function construirJsonLd() {
     availableLanguage: ['Spanish'],
   }
 
-  if (!esMarcador(site.firebaseProjectId)) {
+  if (site.urlConfirmada) {
     datos.url = site.url
     datos.image = `${site.url}/og-image.png`
   }

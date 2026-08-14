@@ -45,6 +45,7 @@ export default {
 
   hero: {
     insignia: 'Atención en español · Todo Estados Unidos · Por teléfono o video',
+    asesorEtiqueta: 'Su asesor',
     titulo: 'Deje a los suyos protegidos,',
     tituloResaltado: 'con claridad',
     tituloFin: 'y sin que nadie le presione',

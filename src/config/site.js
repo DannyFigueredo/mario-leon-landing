@@ -13,6 +13,8 @@
  * hay que confirmarlos con él antes de publicar (lista completa en el README).
  */
 
+import { FOTO_ASESOR_CONFIRMADA } from './images.js'
+
 /* ─── MARCADORES ─────────────────────────────────────────────────────────── */
 export const TODO_EMAIL = 'correo-pendiente@ejemplo.com'
 export const TODO_LICENCIA = 'PENDIENTE'
@@ -94,10 +96,30 @@ export const site = {
 
   firebaseProjectId: TODO_FIREBASE_PROJECT_ID,
 
+  /**
+   * 🌐 EL DOMINIO PÚBLICO — de aquí salen el `canonical`, el `og:url` y el
+   * `sitemap.xml`. Póngalo SIN barra final, con `https://`.
+   *
+   * Déjelo vacío solo si sirve la página desde Firebase Hosting: entonces se
+   * deduce `https://<projectId>.web.app`. Si la sirve desde Vercel (o desde un
+   * dominio propio), escríbalo aquí — si no, el sitemap y el canonical
+   * apuntarían a una dirección que no es la que sirve la página.
+   *
+   *   dominio: 'https://mario-leon.vercel.app'
+   *   dominio: 'https://seguros-marioleon.com'
+   */
+  dominio: '',
+
   get url() {
+    if (!esMarcador(this.dominio)) return this.dominio.replace(/\/$/, '')
     return esMarcador(this.firebaseProjectId)
       ? 'https://ejemplo.web.app'
       : `https://${this.firebaseProjectId}.web.app`
+  },
+
+  /** ¿`url` es de verdad la dirección que sirve la página? */
+  get urlConfirmada() {
+    return !esMarcador(this.dominio) || !esMarcador(this.firebaseProjectId)
   },
 
   tracking: {
@@ -158,8 +180,16 @@ export const listarPendientes = () => {
   if (esMarcador(site.correo)) p.push('CORREO (site.js → correo)')
   if (esMarcador(site.licencia.numero))
     p.push('NÚMERO DE LICENCIA (site.js → licencia.numero) — obligatorio revelarlo en seguros')
+  if (!site.urlConfirmada)
+    p.push(
+      'DOMINIO PÚBLICO sin fijar (site.js → dominio) — sin él no hay canonical y el sitemap apunta a una URL de ejemplo'
+    )
   if (esMarcador(site.firebaseProjectId))
-    p.push('FIREBASE PROJECT ID (site.js → firebaseProjectId y .firebaserc) — bloquea el deploy')
+    p.push(
+      'FIREBASE PROJECT ID (site.js → firebaseProjectId y .firebaserc) — bloquea el deploy en Firebase Hosting y el guardado del formulario'
+    )
+  if (!FOTO_ASESOR_CONFIRMADA)
+    p.push('FOTO DEL ASESOR sin poner (public/asesor.jpg) — el hero muestra una silueta')
   if (esMarcador(site.tracking.metaPixelId))
     p.push('META PIXEL ID (site.js → tracking.metaPixelId)')
   if (esMarcador(site.tracking.googleAdsId))

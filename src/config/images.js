@@ -23,6 +23,28 @@ const pexels = (id, w = 1200) =>
 export const srcSetPexels = (id, anchos = [640, 960, 1280, 1920]) =>
   anchos.map((w) => `${pexels(id, w)} ${w}w`).join(', ')
 
+/**
+ * 👤 LA FOTO DEL ASESOR — la única que NO es de banco de imágenes.
+ * ---------------------------------------------------------------------------
+ * ✅ Ya está puesta: `public/asesor.jpg`, 800×923 px y 77 KB. Sale del retrato
+ * original (1167×1347 PNG, 2,1 MB), guardado en `assets-fuente/` por si hay que
+ * volver a generarla. El original NO se sirve: 2 MB en el hero, que carga con
+ * prioridad, castigan justo a quien entra con datos móviles.
+ *
+ * Para cambiarla:
+ *   1. Guarde el archivo como `public/asesor.jpg` (así, en minúsculas).
+ *      ⚠️ En `public/`, NUNCA en `dist/`: `dist/` es la salida del build, está
+ *      en .gitignore y se borra entera en cada `npm run build`.
+ *   2. Deje `FOTO_ASESOR_CONFIRMADA = true`.
+ *
+ * Recomendado: retrato VERTICAL, entre 4:5 y 6:7, ~800 px de ancho, con la cara
+ * en el tercio superior —el hero recorta con `object-top`— y sin texto encima.
+ * Si el archivo faltara, el hero muestra una silueta con los colores de la
+ * marca: nunca una foto de otra persona haciéndose pasar por él.
+ */
+export const FOTO_ASESOR = '/asesor.jpg'
+export const FOTO_ASESOR_CONFIRMADA = true
+
 export const IDS = {
   hero: 21906852, // pareja mayor latina sonriendo, al aire libre
   iul: 8439746, // pareja mayor revisando algo en el portátil, sonriendo
@@ -36,6 +58,11 @@ export const IDS = {
 }
 
 export const imagenes = {
+  asesor: {
+    src: FOTO_ASESOR,
+    alt: 'Mario Fernando Leon, agente de seguros de vida, mirando a cámara',
+  },
+
   hero: {
     id: IDS.hero,
     src: pexels(IDS.hero, 1920),

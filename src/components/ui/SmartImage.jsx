@@ -25,6 +25,7 @@ export function SmartImage({
   className = '',
   imgClassName = '',
   posicion = 'object-center',
+  fallback = 'marca', // 'marca' (escudo) | 'persona' (silueta, para retratos)
 }) {
   const [estado, setEstado] = useState('cargando') // cargando | ok | error
 
@@ -71,8 +72,19 @@ export function SmartImage({
             strokeLinejoin="round"
             opacity="0.85"
           >
-            <path d="M0-42 -30-30v24c0 16.8 11.6 31.2 30 36 18.4-4.8 30-19.2 30-36v-24L0-42Z" />
-            <path d="m-12-6 8 8 16-16" />
+            {fallback === 'persona' ? (
+              // Silueta neutra: mientras no esté la foto real del asesor, no se
+              // pone la cara de otra persona en su lugar.
+              <>
+                <circle cx="0" cy="-26" r="22" />
+                <path d="M-40 44c0-22 17.9-38 40-38s40 16 40 38" />
+              </>
+            ) : (
+              <>
+                <path d="M0-42 -30-30v24c0 16.8 11.6 31.2 30 36 18.4-4.8 30-19.2 30-36v-24L0-42Z" />
+                <path d="m-12-6 8 8 16-16" />
+              </>
+            )}
           </g>
         </svg>
       ) : (

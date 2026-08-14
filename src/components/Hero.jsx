@@ -47,55 +47,109 @@ export function Hero() {
       />
 
       <div className="relative mx-auto flex min-h-[92vh] max-w-contenido flex-col justify-center px-4 pb-24 pt-28 sm:min-h-[88vh] sm:px-6 sm:pb-28 sm:pt-32 lg:px-8">
-        <div className="max-w-3xl">
-          <motion.p
-            {...entrada(0)}
-            className="mb-5 inline-flex items-center gap-2 rounded-control border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm sm:text-[13px]"
-          >
-            <IconoEscudo className="h-4 w-4 text-acento-300" />
-            {t.hero.insignia}
-          </motion.p>
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_21rem]">
+          <div className="max-w-3xl">
+            <motion.p
+              {...entrada(0)}
+              className="mb-5 inline-flex items-center gap-2 rounded-control border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm sm:text-[13px]"
+            >
+              <IconoEscudo className="h-4 w-4 text-acento-300" />
+              {t.hero.insignia}
+            </motion.p>
 
-          <motion.h1
-            {...entrada(1)}
-            className="font-titulo text-[2.1rem] font-bold leading-[1.08] tracking-tight text-white xs:text-[2.4rem] sm:text-5xl lg:text-6xl"
-          >
-            {t.hero.titulo}{' '}
-            <span className="relative whitespace-nowrap text-acento-300">
-              {t.hero.tituloResaltado}
-            </span>{' '}
-            {t.hero.tituloFin}
-          </motion.h1>
+            {/*
+              La foto del asesor, versión compacta. En móvil el retrato grande
+              empujaría los CTAs fuera de la primera pantalla, así que aquí va la
+              cara en pequeño y en pantallas grandes va la tarjeta de al lado.
+            */}
+            <motion.div {...entrada(1)} className="mb-6 flex items-center gap-3 lg:hidden">
+              <SmartImage
+                src={imagenes.asesor.src}
+                alt={imagenes.asesor.alt}
+                priority
+                fallback="persona"
+                className="h-16 w-16 shrink-0 rounded-full ring-2 ring-white/40"
+                posicion="object-top"
+              />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-acento-300">
+                  {t.hero.asesorEtiqueta}
+                </p>
+                <p className="font-titulo text-base font-bold leading-tight text-white">
+                  {site.nombre}
+                </p>
+                <p className="text-[13px] leading-snug text-white/80">
+                  {site.licencia.descripcion}
+                </p>
+              </div>
+            </motion.div>
 
-          <motion.p
-            {...entrada(2)}
-            className="mt-5 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg"
-          >
-            {t.hero.subtitulo}
-          </motion.p>
+            <motion.h1
+              {...entrada(2)}
+              className="font-titulo text-[2.1rem] font-bold leading-[1.08] tracking-tight text-white xs:text-[2.4rem] sm:text-5xl lg:text-6xl"
+            >
+              {t.hero.titulo}{' '}
+              <span className="relative whitespace-nowrap text-acento-300">
+                {t.hero.tituloResaltado}
+              </span>{' '}
+              {t.hero.tituloFin}
+            </motion.h1>
 
-          <motion.p
-            {...entrada(3)}
-            className="mt-4 flex max-w-2xl gap-3 rounded-tarjeta border border-acento-400/30 bg-marca-900/40 p-4 text-sm leading-relaxed text-white/85 backdrop-blur-sm"
-          >
-            <IconoReloj className="mt-0.5 h-5 w-5 shrink-0 text-acento-300" />
-            <span>{t.hero.urgencia}</span>
-          </motion.p>
+            <motion.p
+              {...entrada(3)}
+              className="mt-5 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg"
+            >
+              {t.hero.subtitulo}
+            </motion.p>
 
-          <motion.div {...entrada(4)} className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <BotonDiagnostico origen="hero" variante="claro" tamano="lg" className="sm:min-w-[16rem]" />
-            <BotonWhatsapp origen="hero" mensaje={t.hero.waMensaje} tamano="lg" />
-          </motion.div>
+            <motion.p
+              {...entrada(4)}
+              className="mt-4 flex max-w-2xl gap-3 rounded-tarjeta border border-acento-400/30 bg-marca-900/40 p-4 text-sm leading-relaxed text-white/85 backdrop-blur-sm"
+            >
+              <IconoReloj className="mt-0.5 h-5 w-5 shrink-0 text-acento-300" />
+              <span>{t.hero.urgencia}</span>
+            </motion.p>
 
-          <motion.ul {...entrada(5)} className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
-            {t.hero.insignias.map((insignia) => (
-              //
-              <li key={insignia} className="flex items-center gap-2 text-[13px] font-medium text-white/85 sm:text-sm">
-                <IconoCheck className="h-4 w-4 shrink-0 text-acento-300" />
-                {insignia}
-              </li>
-            ))}
-          </motion.ul>
+            <motion.div {...entrada(5)} className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <BotonDiagnostico origen="hero" variante="claro" tamano="lg" className="sm:min-w-[16rem]" />
+              <BotonWhatsapp origen="hero" mensaje={t.hero.waMensaje} tamano="lg" />
+            </motion.div>
+
+            <motion.ul {...entrada(6)} className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
+              {t.hero.insignias.map((insignia) => (
+                //
+                <li key={insignia} className="flex items-center gap-2 text-[13px] font-medium text-white/85 sm:text-sm">
+                  <IconoCheck className="h-4 w-4 shrink-0 text-acento-300" />
+                  {insignia}
+                </li>
+              ))}
+            </motion.ul>
+          </div>
+
+          {/* La foto del asesor, versión grande. Solo de lg hacia arriba. */}
+          <motion.figure {...entrada(2)} className="hidden lg:block">
+            <div className="rounded-bloque border border-white/20 bg-white/10 p-2 shadow-elevada backdrop-blur-sm">
+              <SmartImage
+                src={imagenes.asesor.src}
+                alt={imagenes.asesor.alt}
+                priority
+                fallback="persona"
+                className="aspect-[4/5] w-full rounded-tarjeta"
+                posicion="object-top"
+              />
+            </div>
+            <figcaption className="mt-4 text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-acento-300">
+                {t.hero.asesorEtiqueta}
+              </p>
+              <p className="font-titulo text-lg font-bold leading-tight text-white">
+                {site.nombre}
+              </p>
+              <p className="mt-1 text-sm leading-snug text-white/80">
+                {site.licencia.descripcion}
+              </p>
+            </figcaption>
+          </motion.figure>
         </div>
       </div>
 

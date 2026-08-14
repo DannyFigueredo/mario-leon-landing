@@ -20,7 +20,7 @@ npm run deploy     # build + firebase deploy --only hosting
 
 | Archivo | Qué hay dentro |
 |---|---|
-| **`src/config/site.js`** | Teléfono, WhatsApp, correo, horario, licencia, cobertura, IDs de tracking |
+| **`src/config/site.js`** | Teléfono, WhatsApp, correo, horario, licencia, cobertura, dominio público, IDs de tracking |
 | **`src/config/theme.js`** | 🎨 Colores, redondeo y animación (ver §2) |
 | **`src/config/images.js`** | Todas las fotos, con un comentario de qué es cada una |
 | **`src/i18n/es.js`** | **Todo el texto visible de la página** |
@@ -117,6 +117,7 @@ viva. No aparece en producción.
 | Constante | Estado | Por qué importa |
 |---|---|---|
 | Teléfono y WhatsApp | ✅ `+1 (407) 953-5960` | Ya son los reales, en los 12 botones de WhatsApp y los 5 de llamada |
+| Foto de Mario | ✅ `public/asesor.jpg` | Es la única foto que no sale de un banco de imágenes (ver §10) |
 | `TODO_EMAIL` | pendiente | Sale en el pie y en la política de privacidad |
 | `TODO_LICENCIA` | pendiente | **En seguros el número de licencia es de revelación obligatoria.** No se inventa: mientras esté pendiente, el pie dice "número de licencia pendiente de publicar" |
 | `TODO_META_PIXEL_ID` | pendiente | Sin él la campaña optimiza a ciegas |
@@ -188,7 +189,56 @@ En `npm run dev` no se dispara nada real: cada evento se imprime en consola.
 
 ---
 
-## 7. Deploy — todavía no se puede
+## 7. Deploy
+
+Hay dos caminos y **son independientes**: el hosting puede estar en Vercel y
+aun así el formulario sigue guardando en Firestore, porque el formulario habla
+con Firebase desde el navegador, no desde el servidor que sirve la página.
+
+### Opción A — Vercel
+
+`vercel.json` ya está en el repo con el rewrite de SPA (para que `/privacidad`
+no dé 404 al recargar) y las mismas cabeceras de cache y seguridad que Firebase.
+
+Qué hay dentro y por qué:
+
+- **`rewrites`**: `/((?!assets/).*) → /index.html`. En Vercel los rewrites se
+  evalúan **después** del sistema de archivos, así que `/og-image.png` y
+  compañía se sirven tal cual; la exclusión de `assets/` es un cinturón de más.
+- **`headers`**: un año de cache para `/assets/*` (llevan hash en el nombre),
+  una hora para `og-image.png` / `favicon.svg` / `robots.txt` / `sitemap.xml`
+  (no lo llevan) y `no-store` para el HTML. Los tres patrones **no se solapan**
+  —el último excluye a los otros dos— para que ninguna regla pise el
+  `Cache-Control` de otra.
+- ⚠️ **Nada de comentarios `//` dentro de `vercel.json`.** A diferencia de
+  `firebase.json`, Vercel valida el archivo contra un esquema estricto y una
+  clave desconocida dentro de `rewrites` o `headers` **hace fallar el deploy**.
+
+1. **Fije el dominio** en `site.js → dominio`:
+   ```js
+   dominio: 'https://mario-leon.vercel.app'   // sin barra final
+   ```
+   Sin esto no se emite `canonical`, y el `og:url` y el `sitemap.xml` apuntan a
+   `https://ejemplo.web.app`. El primer deploy dirá qué URL le tocó; se pone
+   aquí y se vuelve a desplegar. Con dominio propio, se pone el dominio propio.
+2. Despliegue, de una de las dos formas:
+   ```bash
+   npx vercel            # primera vez: crea el proyecto y hace un preview
+   npx vercel --prod     # a producción
+   ```
+   O conecte el repo en <https://vercel.com/new>: detecta Vite solo, y a partir
+   de ahí cada `git push` despliega.
+3. Vercel no necesita configuración manual de build: `buildCommand`,
+   `outputDirectory` (`dist`) y `framework` vienen en `vercel.json`.
+
+⚠️ El SEO se genera **en tiempo de build** (`vite.config.js`). Si cambia
+`dominio`, hay que volver a desplegar: no basta con editar el archivo.
+
+⚠️ Vercel da una URL distinta a cada preview (`...-git-rama.vercel.app`). El
+`canonical` de todas apuntará al dominio de producción, que es lo correcto,
+pero **no mande tráfico pagado a una URL de preview**.
+
+### Opción B — Firebase Hosting
 
 Falta el proyecto de Firebase. Pasos, en orden:
 
@@ -197,8 +247,9 @@ Falta el proyecto de Firebase. Pasos, en orden:
    ```json
    { "projects": { "default": "el-project-id" } }
    ```
-   y el mismo valor en `site.js → TODO_FIREBASE_PROJECT_ID`. De ahí salen la
-   URL del sitio, el `og:url`, el `canonical` y el `sitemap.xml`.
+   y el mismo valor en `site.js → TODO_FIREBASE_PROJECT_ID`. De ahí sale la URL
+   del sitio (`https://<projectId>.web.app`) **si `site.dominio` está vacío**;
+   si tiene algo, manda `dominio`.
 3. `firebase login` (es interactivo, no se puede automatizar).
 4. `npm run deploy`.
 
@@ -208,7 +259,7 @@ assets con hash, cache corta para `og-image.png` / `favicon.svg` / `robots.txt`
 para `**/*.html`**, porque una regla de `/index.html` no alcanza la petición de
 `/`— y las cabeceras `X-Content-Type-Options` y `Referrer-Policy`.
 
-### Formulario (Firestore)
+### Formulario (Firestore) — hace falta aunque el hosting esté en Vercel
 
 ```bash
 firebase apps:create WEB "Mario Leon Landing"
@@ -282,6 +333,39 @@ src/
 ```
 
 ## 10. Fotos
+
+### La del asesor — la única que no es de banco de imágenes
+
+El hero muestra el retrato de Mario: en móvil, en pequeño y redondo junto a su
+nombre (si fuera grande, empujaría los botones fuera de la primera pantalla);
+de `lg` hacia arriba, como tarjeta vertical a la derecha del titular. Las dos
+salen de la misma entrada, `imagenes.asesor`.
+
+**Ya está puesta**: `public/asesor.jpg`, 800×923 px y 77 KB. El original que
+mandó Mario (1167×1347 PNG, 2,1 MB) está en **`assets-fuente/`** por si hay que
+volver a generarla; el que se sirve es el JPEG reducido, porque el retrato del
+hero carga con `priority` y 2 MB ahí castigan justo a quien entra desde el
+móvil con datos.
+
+Para cambiarla:
+
+1. Guarde el archivo como **`public/asesor.jpg`**.
+   ⚠️ En **`public/`**, nunca en `dist/`. `dist/` es la salida del build: está
+   en `.gitignore` y **`npm run build` la borra entera**. Lo que se ponga ahí
+   desaparece en el siguiente build y no llega nunca al deploy.
+2. Mantenga `FOTO_ASESOR_CONFIRMADA = true` en `src/config/images.js`.
+
+Formato: retrato **vertical** (entre 4:5 y 6:7), ~800 px de ancho, la cara en
+el tercio superior —el recorte es `object-top`— y fondo sencillo. La tarjeta
+del hero es 4:5, así que de un 6:7 recorta un 8 % por los lados: nada de la
+cara, pero no ponga nada importante pegado al borde.
+
+⚠️ **Si el archivo faltara, el hero muestra una silueta** con los colores de la
+marca, no la cara de un modelo de banco de imágenes: poner otra persona bajo el
+rótulo "Su asesor — Mario Fernando Leon" sería presentar a un desconocido como
+si fuera él.
+
+### Las de contexto
 
 Todas de **Pexels** (licencia libre, también comercial, sin atribución
 obligatoria). Cada ID verificado con HTTP 200 y revisado a ojo.
